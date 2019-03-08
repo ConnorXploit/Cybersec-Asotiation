@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <title>Mapa con datos</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
+        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
+        <style>
+            body { 
+                margin:0; 
+                padding:0; 
+            }
+            #map { 
+                position:absolute; 
+                top:0; 
+                bottom:0; 
+                width:100%; 
+            }
+        </style>
+    </head>
+    <body>
+    <div id='map'></div>
+    <script>
+        datos_recogidos = {}
+        {% if datos %}
+            datos_recogidos = {{datos|safe | replace('\\\"', '')}}
+        {% endif %}
+        mapboxgl.accessToken = 'pk.eyJ1IjoiaXZhbmNvcmNvbGVzIiwiYSI6ImNpcHhuc2VlbzAwNzhoem0yeGt2dHowNzMifQ.G57kFhckY4Jq00VrVPJ2AQ';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/ivancorcoles/cjsyyt83l3rfu1fqtqu8xn1n9',
+            center: [-2.6686176, 42.8434156],
+            zoom: 15.0
+        });
+        map.on('load', function () {
+            map.addLayer({
+                "id": "points",
+                "type": "symbol",
+                "source": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": [
+                            {% for dato in (datos|safe | replace('\\\"', '')) %}
+                            {
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [
+                                    nuevos_datos[dato]['lonwgs84'],
+                                    nuevos_datos[dato]['latwgs84']
+                                ]
+                            },
+                            "properties": {
+                                "title": nuevos_datos[dato]['eventType'],
+                                "icon": "monument"
+                            },
+                            {% endfor %}
+                        }
+                    }]}
+                },
+                "layout": {
+                    "icon-image": "{icon}-15",
+                    "text-field": "{title}",
+                    "text-font": [
+                        "Open Sans Semibold",
+                        "Arial Unicode MS Bold"
+                    ],
+                    "text-offset": [
+                        0,
+                        0.6
+                    ],
+                    "text-anchor": "top"
+                }
+            });
+        });
+    </script>
+    </body>
+</html>
